@@ -21,10 +21,10 @@ def plt_single_by_mix(dir_in):
     for i in range(len(embedding_rates)):
         FSI_size = FSI_sizes[i]
         ORI_size = ORI_sizes[i]
-        Mix_size = FSI_size + ORI_size
+        Mix_size = list(np.array(FSI_size) + np.array(ORI_size))
         FSI_elapse = FSI_elapses[i]
         ORI_elapse = ORI_elapses[i]
-        Mix_elapse = FSI_elapse if FSI_size >= 100 else FSI_elapse + ORI_elapse
+        Mix_elapse = [fsi if fsi_size >= 100 else fsi + ori for fsi, fsi_size, ori in zip(FSI_elapse, FSI_size, ORI_elapse)]
         Mix_match_ratio = 100 * len([x for x in Mix_size if x > 0]) / len(Mix_size)
         ORI_match_ratio = 100 * len([x for x in ORI_size if x > 0]) / len(ORI_size)
         Mix_match_elapse = np.log(sum(Mix_elapse) / len(Mix_elapse) if Mix_elapse else 0)
@@ -37,11 +37,12 @@ def plt_single_by_mix(dir_in):
     match_rates.append(Mix_match_ratios)
     match_elapses.append(ORI_match_elapses)
     match_elapses.append(Mix_match_elapses)
+    logging.info(f"ORI_match_elapses:{ORI_match_elapses}, Mix_match_elapses:{Mix_match_elapses}")
     legends = ["CSM-Index", "CSM-FSI"]
-    plt_util.plt_multi_line(embedding_rates, match_rates, legends, "embeddings coverage rate (%)", "match ratio (%)",
+    plt_util.plt_multi_line(embedding_rates, match_rates, legends, "embeddings coverage ratio (%)", "match ratio (%)",
                             [0], "", "lower right", (6,5))
-    plt_util.plt_multi_line(embedding_rates, match_elapses, legends, "embeddings coverage rate (%)", "log of query elapse (s)",
-                            [-6], "", "lower right", (6,5))
+    plt_util.plt_multi_line(embedding_rates, match_elapses, legends, "embeddings coverage ratio (%)", "log of query elapse (s)",
+                            [0], "", "lower right", (6,5))
 
 def plt_single_by_embedding_rate(dir_in):
 
@@ -73,9 +74,9 @@ def plt_single_by_embedding_rate(dir_in):
     match_elapses.append(ORI_match_elapses)
     match_elapses.append(FSI_match_elapses)
     legends = ["CSM-Index", "JSM-FSI"]
-    plt_util.plt_multi_line(embedding_rates, match_rates, legends, "embeddings coverage rate (%)", "match ratio (%)",
+    plt_util.plt_multi_line(embedding_rates, match_rates, legends, "embeddings coverage ratio (%)", "match ratio (%)",
                             [0], "", "lower right", (6,5))
-    plt_util.plt_multi_line(embedding_rates, match_elapses, legends, "embeddings coverage rate (%)", "log of query elapse (s)",
+    plt_util.plt_multi_line(embedding_rates, match_elapses, legends, "embeddings coverage ratio (%)", "log of query elapse (s)",
                             [-6], "", "lower right", (6,5))
 
 def plt_single_by_query_size(dir_in):
@@ -97,9 +98,9 @@ def plt_single_by_query_size(dir_in):
         match_elapses[query_size] = tuple((ORI_match_elapse, FSI_match_elapse))
     logging.info(f"match_rates:{match_rates}")
     plt_util.plt_double_bars(match_rates, ("CSM-Index", "JSM-FSI"), "query graph size (node counts)",
-                             "matched rate (%)", f"embedding_rate={embedding_rate}%")
+                             "matched ratio (%)", f"embedding_ratio={embedding_rate}%")
     plt_util.plt_double_bars(match_elapses, ("CSM-Index", "JSM-FSI"), "query graph size (node counts)",
-                             "log of query elapse time (s)", f"embedding_rate={embedding_rate}%")
+                             "log of query elapse time (s)", f"embedding_ratio={embedding_rate}%")
 
 def plt_multi(dir_in):
     max_query_times = [60, 300, 600, 1200]
@@ -130,10 +131,10 @@ def plt_multi(dir_in):
     logging.info(f"match_rates:{match_rates}")
     for embedding_rate, match_rate_tuples in match_rates.items():
         plt_util.plt_double_bars(match_rate_tuples, ("CSM-Index", "JSM-FSI"), "max query time (s)",
-                                 "matched rate (%)", f"embedding_rate={embedding_rate}%")
+                                 "matched ratio (%)", f"embedding_ratio={embedding_rate}%")
     for embedding_rate, match_elapse_tuples in match_elapses.items():
         plt_util.plt_double_bars(match_elapse_tuples, ("CSM-Index", "JSM-FSI"), "max query time (s)",
-                                 "log of query elapse time (s)", f"embedding_rate={embedding_rate}%")
+                                 "log of query elapse time (s)", f"embedding_ratio={embedding_rate}%")
 
     exit()
 
@@ -155,5 +156,6 @@ if __name__ == '__main__':
     cu.custom_logging()
     dir_in = str(sys.argv[1]) + "/"
     #plt_multi(dir_in)
-    #plt_single_by_embedding_rate(dir_in)
-    plt_single_by_query_size(dir_in)
+    plt_single_by_embedding_rate(dir_in)
+    #plt_single_by_query_size(dir_in)
+    #plt_single_by_mix(dir_in)

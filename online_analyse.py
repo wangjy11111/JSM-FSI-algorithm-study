@@ -583,12 +583,12 @@ def main():
         run_by_embeeding(max_query_time)
     exit()
 
-    query_sizes = range(3, 8)
+    '''
+    query_sizes = range(7, 8)
     for query_size in query_sizes:
         logging.info(f"begin query_size:{query_size}")
         run_by_query_size(query_size)
     exit()
-    '''
 
     max_query_times = [600]
     for max_query_time in max_query_times:
