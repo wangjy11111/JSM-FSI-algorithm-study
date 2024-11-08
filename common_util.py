@@ -9,39 +9,39 @@ import re
 
 def custom_logging():
 
-    # 定义自定义日志格式
+    # Define a custom log format
     log_format = '[%(asctime)s][%(levelname)s][%(filename)s/%(funcName)s():%(lineno)d] %(message)s'
 
-    # 配置基本的日志设置
+    # Configure basic logging settings
     logging.basicConfig(level=logging.INFO, format=log_format)
 
 
 def custom_print(*args, **kwargs):
-    # 获取当前调用的帧
+    # Get the current calling frame
     frame = inspect.currentframe().f_back
 
-    # 获取文件名、方法名和行号
+    # Get the filename, method name, and line number
     filename = os.path.basename(frame.f_code.co_filename)  # 获取文件名，不包括路径
     function_name = frame.f_code.co_name  # 获取方法名
     lineno = frame.f_lineno  # 获取行号
 
-    # 格式化输出
+    # Format the output
     print(f"{filename}/{function_name} {lineno} --", *args, **kwargs)
 
 def dict_intersaction(dict_a, dict_b):
     #custom_print(f"dict_a:{dict_a}, dict_b:{dict_b}")
-    # 计算交集
+    # Calculate the intersection
     intersection = {key: dict_a[key] & dict_b[key] for key in dict_a if key in dict_b}
 
-    # 移除空集合
+    # Remove empty sets
     intersection = {k: v for k, v in intersection.items() if v}
-    # 计算交集
+    # Calculate the intersection
     return intersection
 def dict_union(dict_a, dict_b):
     return {key: dict_a.get(key, set()) | dict_b.get(key, set()) for key in dict_a.keys() | dict_b.keys()}
 
 def get_total_size(obj):
-    """递归计算对象及其元素的总字节数"""
+    """Recursively calculate the total byte size of an object and its elements"""
     total_size = sys.getsizeof(obj)
     if isinstance(obj, tuple) or isinstance(obj, list) or isinstance(obj, set):
         total_size += sum(get_total_size(item) for item in obj)
@@ -123,21 +123,21 @@ def read_info(directory, name_prefix):
 
     #graph_files = [f for f in os.listdir(directory) if f.startswith(name_prefix + "_freq_") and f.endswith('.graphml')]
     graph_files = [f for f in os.listdir(directory) if f.startswith(name_prefix + "_freq_") and f.endswith('.graphml')]
-    # 提取文件中的数字并按数字排序
+    # Extract numbers from the file and sort them in numerical order
     def extract_freq_number(file_name):
-        match = re.search(r'freq_(\d+)', file_name)  # 使用正则表达式提取 freq_ 后的数字
-        return int(match.group(1)) if match else float('inf')  # 返回提取的数字
-    # 按 freq_ 后的数字排序文件
+        match = re.search(r'freq_(\d+)', file_name)  # Use a regular expression to extract the number following 'freq_'
+        return int(match.group(1)) if match else float('inf')  # Return the extracted number
+    # Sort the file by the numbers following 'freq_'
     graph_files.sort(key=extract_freq_number)
 
-    # 初始化一个列表来存储读取的频繁子图
+    # Initialize a list to store the frequent subgraphs read
     subgraphs = []
 
     # 循环读取每个子图
     for file in graph_files:
-        file_path = os.path.join(directory, file)  # 构建完整的文件路径
-        subgraph = nx.read_graphml(file_path)  # 读取单个子图
-        subgraphs.append(subgraph)  # 将子图添加到列表中
+        file_path = os.path.join(directory, file)  # Construct the full file path
+        subgraph = nx.read_graphml(file_path)  # Read a single subgraph
+        subgraphs.append(subgraph)  # Add the subgraph to the list
 
     with open(directory + name_prefix + "_FSIn.pkl", "rb") as file:
         FSI_node_index = pickle.load(file)
@@ -179,21 +179,21 @@ def read_info_by_maxlen(directory, name_prefix, max_len, is_mix):
 
     #graph_files = [f for f in os.listdir(directory) if f.startswith(name_prefix + "_freq_") and f.endswith('.graphml')]
     graph_files = [f for f in os.listdir(directory) if f.startswith(name_prefix + "_freq_") and f.endswith('.graphml')]
-    # 提取文件中的数字并按数字排序
+    # Extract numbers from the file and sort them in ascending order
     def extract_freq_number(file_name):
-        match = re.search(r'freq_(\d+)', file_name)  # 使用正则表达式提取 freq_ 后的数字
-        return int(match.group(1)) if match else float('inf')  # 返回提取的数字
-    # 按 freq_ 后的数字排序文件
+        match = re.search(r'freq_(\d+)', file_name)  # Use a regular expression to extract the number following 'freq_'
+        return int(match.group(1)) if match else float('inf')  # Return the extracted number
+    # Sort the file by the number following 'freq_'
     graph_files.sort(key=extract_freq_number)
 
-    # 初始化一个列表来存储读取的频繁子图
+    # Initialize a list to store the frequent subgraphs read
     subgraphs = []
     
-    # 循环读取每个子图
+    # Loop through and read each subgraph
     for file in graph_files:
-        file_path = os.path.join(directory, file)  # 构建完整的文件路径
-        subgraph = nx.read_graphml(file_path)  # 读取单个子图
-        subgraphs.append(subgraph)  # 将子图添加到列表中
+        file_path = os.path.join(directory, file)  # Construct the full file path
+        subgraph = nx.read_graphml(file_path)  # Read a single subgraph
+        subgraphs.append(subgraph)  # Add the subgraph to the list
 
     with open(directory + name_prefix + "_FSIn.pkl", "rb") as file:
         FSI_node_index = pickle.load(file)

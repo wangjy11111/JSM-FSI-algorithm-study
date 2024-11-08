@@ -98,6 +98,9 @@ def plt_by_embedding():
 
 if __name__ == '__main__':
     cu.custom_logging()
-    #plt_by_depth()
-    #plt_by_embedding()
+    # Corresponding to Fig 8
+    plt_by_depth()
+    # Corresponding to Fig 10.(a).(b). Analyse indexes for CSM-Index and JSM-FSI
+    plt_by_embedding()
+    # Corresponding to Fig 11.(a).(b). Analyse indexes for CSM-FSI
     plt_mix()

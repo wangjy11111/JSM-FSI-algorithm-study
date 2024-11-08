@@ -15,56 +15,56 @@ import plt_util
 def gen_querys(G, query_num, query_mean, query_std, degree_mean, degree_std):
     query_graphs = []
     for _ in range(query_num):
-        # 生成节点数，符合 N(5, 4) 的正态分布，限制范围在 1 到 20
+        # Generate the number of nodes following a normal distribution N(5, 2^2), limited to a range of 3 to 7.
         num_nodes = int(np.clip(np.random.normal(query_mean, query_std), 3, 7))
     
-        # 从 G 的节点中随机选择节点，并创建查询图
+        # Randomly select nodes from G and create a query graph
         query_graph = nx.Graph()
-        selected_nodes = random.choices(list(G.nodes()), k=num_nodes)  # 可以重复选择节点
+        selected_nodes = random.choices(list(G.nodes()), k=num_nodes)  # Nodes can be selected multiple times
 
-        # 用于跟踪已遍历的节点
+        # Used to track visited nodes
         added_nodes = []
 
-        # 添加节点到查询图并建立边
+        # Add nodes to the query graph and establish edges
         for i, original_node in enumerate(selected_nodes):
-            # 重新编号为从 0 开始的连续整数
+            # Renumber to consecutive integers starting from 0
             new_node_id = i  # 新的节点 ID
             query_graph.add_node(new_node_id, node_type=G.nodes[original_node]['node_type'])
             #query_graph.add_node(new_node_id, node_type=random.choice([74, 90, 98, 93, 90, 68, 92, 99, 71]))
 
-            # 检查当前节点是否与已遍历节点之间有边
-            if added_nodes:  # 确保已遍历节点列表不为空
-                # 检查当前节点与已遍历节点之间是否有边
+            # Check if there is an edge between the current node and the visited nodes
+            if added_nodes:  # Ensure that the visited nodes list is not empty
+                # Check if there is an edge between the current node and the visited nodes
                 connected = any(query_graph.has_edge(new_node_id, target_node) for target_node in added_nodes)
 
-                if not connected:  # 如果没有连接
-                    # 随机选择一个已遍历的节点进行连接
+                if not connected:  # If there is no connection
+                    # Randomly select a visited node to connect
                     target_node = random.choice(added_nodes)
                     query_graph.add_edge(new_node_id, target_node)  # 添加边
 
-            # 添加当前节点到已遍历节点列表
+            # Add the current node to the list of visited nodes
             added_nodes.append(new_node_id)
 
-        # 为每个节点生成所需的度数，并添加边
+        # Generate the required degree for each node and add edges
         node_degrees = {}
         
         for node in query_graph.nodes():
             desired_degree = int(np.clip(np.random.normal(degree_mean, degree_std), 1, num_nodes - 1))
             node_degrees[node] = desired_degree
     
-        # 添加边以满足每个节点的度数要求
+        # Add edges to meet the degree requirements for each node
         for node in query_graph.nodes():
             current_degree = query_graph.degree(node)
             while current_degree < node_degrees[node]:
-                # 随机选择一个目标节点，确保目标节点不同并且尚未达到其度数要求
+                # Randomly select a target node, ensuring the target node is different and has not yet met its degree requirement
                 potential_targets = [
                     n for n in query_graph.nodes() 
                     if n != node 
                     and query_graph.degree(n) < node_degrees[n]
-                    and not query_graph.has_edge(node, n)  # 检查是否已存在边
+                    and not query_graph.has_edge(node, n)  # Check if the edge already exists
                 ]
                 if not potential_targets:
-                    break  # 如果没有合适的目标，则停止添加边
+                    break  # If no suitable target is found, stop adding edges
                 
                 target_node = random.choice(potential_targets)
                 query_graph.add_edge(node, target_node)
@@ -90,7 +90,8 @@ def do_ORI(query, linears, linears_to_nodes, G, G_node_index, G_linear_index, ma
         logging.debug(f"before ORI_hip_match:{cands}")
         ORI_pos = ORI_hip_match(-1, G, query, G_linear_index, type_str, cands, query_start_node, 10, max_matches)
 
-    return ORI_pos # 只需要查看一个type_str即可，因为其他type_str一定与它相连，无需重复判断
+    # Only one type_str needs to be checked, as the other type_strs are guaranteed to be connected to it, so there is no need for repeated checks
+    return ORI_pos
 
 def time_exceed(start_time, max_run_time):
     if time.time() - start_time > max_run_time:
@@ -115,7 +116,8 @@ def do_ORI2(start_time, max_query_time, query, G, G_linear_index, max_matches):
         ORI_pos = ORI_hip_match(start_time, max_query_time, -1, G, query, G_linear_index, edge_str, cands, first_node,
                                 10, max_matches)
 
-    return ORI_pos # 只需要查看一个type_str即可，因为其他type_str一定与它相连，无需重复判断
+    # Only one type_str needs to be checked, as the other type_strs are guaranteed to be connected to it, so there is no need for repeated checks
+    return ORI_pos
 
 def get_single_linear_cand(linears, G_index, Gs_linear_index):
     cand_type2list = {}
@@ -123,7 +125,7 @@ def get_single_linear_cand(linears, G_index, Gs_linear_index):
         if m not in Gs_linear_index:
             continue
         logging.debug(f"Gs_linear_index keys:{Gs_linear_index[m].keys()}")
-        for elem_id, elem in enumerate(linear):  # 遍历每个频繁子图
+        for elem_id, elem in enumerate(linear):  # Iterate through each frequent subgraph
             type_str = "_".join(map(str, elem))
             if type_str not in Gs_linear_index[m]:
                 logging.debug(f"no type_str:{type_str} found")
@@ -147,7 +149,7 @@ def get_linear_cand(linears, Gs_linear_index):
         if m not in Gs_linear_index:
             continue
         logging.debug(f"linear size:{len(linear)}")
-        for elem_id, elem in enumerate(linear):  # 遍历每个频繁子图
+        for elem_id, elem in enumerate(linear):  # Iterate through each frequent subgraph
             type_str = "_".join(map(str, elem))
             if type_str in Gs_linear_index[m]:
                 cand_type2list[type_str] = set(Gs_linear_index[m][type_str].keys())
@@ -183,7 +185,7 @@ def get_cycle_cand(cycles, Gs_cycle_index):
         if m not in Gs_cycle_index:
             continue
         logging.debug(f"cycle size:{len(cycle)}")
-        for elem_id, elem in enumerate(cycle):  # 遍历每个频繁子图
+        for elem_id, elem in enumerate(cycle):  # Iterate through each frequent subgraph
             type_str = "_".join(map(str, elem))
             if type_str in Gs_cycle_index[m]:
                 cand_type2list[type_str] = set(Gs_cycle_index[m][type_str].keys())
@@ -203,7 +205,7 @@ def mix_to_linear_cand(cand_type2list, val_type_str, vals_in):
     last_val_index = val_type_str.rfind('_')
     prefix_val_str = val_type_str[:first_val_index]
     suffix_val_str = val_type_str[last_val_index + 1:]
-    # 遍历cand，裁剪vals_in中的元素
+    # Iterate through cand and trim elements in vals_in
     for cand_type, cand_list in cand_type2list.items():
         first_index = cand_type.find('_')
         last_index = cand_type.rfind('_')
@@ -298,27 +300,27 @@ def merge_FSI(start_time, max_query_time, FSI_linear_cand, FSI_cycle_cand, subgr
     return FSI_pos
 
 def FSI_hip_match(start_time, max_query_time, graph_id, graph, query, G1_node_index):
-    matches = set()  # 存储最终匹配结果
-    matched_nodes = set()  # 记录已匹配的节点
+    matches = set()  # Store the final matching results
+    matched_nodes = set()  # Record the matched nodes
 
-    # 创建一个函数用于查找路径
+    # Create a function for finding paths
     def find_path(start_node, end_node, path=[]):
-        path = path + [start_node]  # 将起始节点添加到路径中
+        path = path + [start_node]  # Add the starting node to the path
         if start_node == end_node:
             return path
         for neighbor in graph.neighbors(start_node):
-            if neighbor not in path and neighbor not in matched_nodes:  # 检查路径是否交叉
+            if neighbor not in path and neighbor not in matched_nodes:  # Check if the path intersects
                 new_path = find_path(neighbor, end_node, path)
-                if new_path:  # 如果找到路径，则返回
+                if new_path:  # If a path is found, return it
                     return new_path
         return []
 
-    # 创建一个递归函数来查找完整的 query 匹配
+    # Create a recursive function to find complete query matches
     def find_matching(start_time, max_query_time, query_index, current_path, matched_nodes):
         logging.debug(f"query:{query.nodes}, query_index:{query_index}, current_path:{current_path}")
         if (time_exceed(start_time, max_query_time)):
             return
-        if query_index == len(query.nodes()):  # 所有 query 节点都已匹配
+        if query_index == len(query.nodes()):  # All query nodes have been matched
             matches.add(tuple(current_path))
             logging.debug(f"find one embedding:{current_path}")
             return
@@ -326,7 +328,7 @@ def FSI_hip_match(start_time, max_query_time, graph_id, graph, query, G1_node_in
         query_node = list(query.nodes())[query_index]
         query_node_type = query.nodes[query_node]['node_type']
 
-        # 查找 graph 中匹配的节点
+        # Find the matched nodes in the graph
         for graph_node in graph.nodes():
             if graph.nodes[graph_node]['node_type'] == query_node_type and graph_node not in matched_nodes:
                 # 添加当前匹配的节点到已匹配集合
@@ -335,7 +337,7 @@ def FSI_hip_match(start_time, max_query_time, graph_id, graph, query, G1_node_in
                 logging.debug(f"query:{query.nodes}, current_path:{current_path}")
                 logging.debug(f"query_type:{[query.nodes[x]['node_type'] for x in query.nodes()]}, path_type:{[graph.nodes[x]['node_type'] for x in current_path]}")
 
-                # 如果不是最后一个节点，查找下一个 query 节点的路径
+                # If it is not the last node, find the path to the next query node
                 if query_index < len(query.nodes()) - 1:
                     next_query_node = list(query.nodes())[query_index + 1]
                     next_query_node_type = query.nodes[next_query_node]['node_type']
@@ -343,17 +345,17 @@ def FSI_hip_match(start_time, max_query_time, graph_id, graph, query, G1_node_in
                     for next_graph_node in graph.nodes():
                         if graph.nodes[next_graph_node]['node_type'] == next_query_node_type:
                             path = find_path(graph_node, next_graph_node)
-                            if len(path) > 0:  # 找到路径，继续查找下一个匹配
+                            if len(path) > 0:  # Find the path and continue searching for the next match
                                 find_matching(start_time, max_query_time, query_index + 1, current_path, matched_nodes)
                 else:
-                    # 处理最后一个节点的情况
+                    # Handle the case of the last node
                     find_matching(start_time, max_query_time, query_index + 1, current_path, matched_nodes)
 
-                # 回溯
+                # Backtrack
                 matched_nodes.remove(graph_node)
                 current_path.pop()
 
-    # 从第一个节点开始查找完整的匹配
+    # Start from the first node to find the complete match
     matched_nodes = set()
     find_matching(start_time, max_query_time, 0, [], matched_nodes)
 
@@ -370,21 +372,21 @@ def FSI_hip_match(start_time, max_query_time, graph_id, graph, query, G1_node_in
 def ORI_hip_match(start_time, max_query_time, graph_id, graph, query, G_linear_index, tag, cands, query_start_node,
                   max_search_len, max_matches):
 
-    # 创建一个函数用于查找路径，限制路径长度在 max_search_len 内
+    # Create a function to find paths, limiting the path length to max_search_len
     def find_path(start_node, end_node, path, length, matches, matched_nodes):
-        if length > max_search_len:  # 如果超出最大长度限制，返回 None
+        if length > max_search_len:  # If it exceeds the maximum length limit, return empty list
             return []
-        path = path + [start_node]  # 将起始节点添加到路径中
+        path = path + [start_node]  # Add the starting node to the path
         if start_node == end_node:
             return path
         for neighbor in graph.neighbors(start_node):
-            if neighbor not in path and neighbor not in matched_nodes:  # 检查路径是否交叉
+            if neighbor not in path and neighbor not in matched_nodes:  # Check if the path intersects
                 new_path = find_path(neighbor, end_node, path, length + 1, matches, matched_nodes)
-                if len(new_path) > 0:  # 如果找到路径，则返回
+                if len(new_path) > 0:  # If a path is found, return it
                     return new_path
         return []
 
-    # 创建一个递归函数来查找完整的 query 匹配，限定距离 max_search_len
+    # Create a recursive function to find complete query matches, limiting the distance to max_search_len
     def find_matching(start_time, max_query_time, query_node, G_linear_index, current_path, current_len, matches, matched_nodes, matched_query_nodes):
         #logging.debug(f"query:{query.nodes}, query_node:{query_node}, current_path:{current_path}")
         #logging.debug(f"matched_nodes:{matched_nodes}, matched_query:{matched_query_nodes}, current_path:{current_path}")
@@ -392,7 +394,7 @@ def ORI_hip_match(start_time, max_query_time, graph_id, graph, query, G_linear_i
             return
         if (len(matches) > max_matches):
             return
-        if len(current_path) == len(query.nodes()):  # 所有 query 节点都已匹配
+        if len(current_path) == len(query.nodes()):  # All query nodes have been matched
             logging.debug(f"find one embedding: {current_path}")
             matches.add(tuple(current_path))
             return
@@ -402,7 +404,7 @@ def ORI_hip_match(start_time, max_query_time, graph_id, graph, query, G_linear_i
         #logging.debug(f"G_node_index:{G_node_index.keys()}")
         #logging.debug(f"query_node_type:{query_node_type}")
 
-        # 如果不是最后一个节点，查找下一个 query 节点的路径
+        # If it is not the last node, find the path to the next query node
         for next_query_node in query.neighbors(query_node):
             if next_query_node in matched_query_nodes:
                 continue
@@ -430,15 +432,15 @@ def ORI_hip_match(start_time, max_query_time, graph_id, graph, query, G_linear_i
 
     ORI_pos = set()
     for val in tqdm(cands, desc=f"Processing {tag}"):
-        matches = set()  # 存储最终匹配结果
-        matched_query_nodes = set() # 记录已经匹配的query节点
-        matched_nodes = set()  # 记录已匹配的graph节点
+        matches = set()  # Store the final matching results
+        matched_query_nodes = set() # Record the matched query nodes
+        matched_nodes = set()  # Record the matched graph nodes
         graph_start_node = list(val)[0]
         if graph_start_node == "-":
             logging.debug(f"cands:{cands}")
             logging.debug(f"val:{val}")
             exit()
-        # 从指定的起点开始查找匹配
+        # Start finding matches from the specified starting point
         matched_nodes.add(graph_start_node)
         matched_query_nodes.add(query_start_node)
         find_matching(start_time, max_query_time, query_start_node, G_linear_index, [graph_start_node],
@@ -457,17 +459,17 @@ def match_by_FSI(start_time, max_query_time, query, subgraphs, M, N, FSI_linear_
         all_possible_graphs = {}
         for i in range(N):
             removed_num = i+1
-            # 列举移除3个节点后的所有可能图
+            # List all possible graphs after removing 3 nodes
 
-            # 使用 itertools.combinations 来生成所有3个节点的组合
+            # Use itertools.combinations to generate all combinations of 3 nodes
             for nodes_to_remove in itertools.combinations(query.nodes, removed_num):
-                # 复制原图
+                # Copy the original graph
                 new_query = query.copy()
 
-                # 移除组合中的每个节点
+                # Remove each node in the combination
                 new_query.remove_nodes_from(nodes_to_remove)
 
-                # 保存新图
+                # Save the new graph
                 if removed_num not in all_possible_graphs:
                     all_possible_graphs[removed_num] = set()
                 all_possible_graphs[removed_num].add((nodes_to_remove, new_query))
@@ -545,25 +547,25 @@ def parse_query(query, M, N):
     linears_to_nodes = {}
     cycles_to_nodes = {}
     for v in tqdm(query.nodes(), desc="Parsing query"):
-        parse_by_dfs(query, v, [], M, N, linears, cycles, linears_to_nodes, cycles_to_nodes)  # 初始 Path 为空
+        parse_by_dfs(query, v, [], M, N, linears, cycles, linears_to_nodes, cycles_to_nodes)  # The initial path is empty
     return linears, cycles, linears_to_nodes, cycles_to_nodes
 
-# DFS 遍历并构建索引
+# Perform DFS traversal and build the index
 def parse_by_dfs(query, v, Path, M, N, linears, cycles, linears_to_nodes, cycles_to_nodes):
-    if v not in Path:  # 说明不是环，是直线通路
+    if v not in Path:  # Indicate that it is not a cycle, but a linear path
         if len(Path) >= M:
             return
-        Path.append(v)  # 把当前节点加入到 Path
+        Path.append(v)  # Add the current node to the path
         type_linear_path = [query.nodes[x]['node_type'] for x in Path]
         if len(Path) > 1:
             if len(Path) not in linears:
                 linears[len(Path)] = set()
             linears[len(Path)].add(tuple(type_linear_path))
             linears_to_nodes["_".join(map(str, type_linear_path))] = tuple(Path)
-        for neighbor in query.neighbors(v):  # 遍历所有邻居节点
-            parse_by_dfs(query, neighbor, Path, M, N, linears, cycles, linears_to_nodes, cycles_to_nodes)  # 递归执行 DFS
-        Path.pop()  # 回溯，恢复 Path 到调用前的状态
-    elif v == Path[0]:  # 说明形成了环
+        for neighbor in query.neighbors(v):  # Traverse all neighboring nodes
+            parse_by_dfs(query, neighbor, Path, M, N, linears, cycles, linears_to_nodes, cycles_to_nodes)  # Recursively perform DFS
+        Path.pop()  # Backtrack, restoring the path to its state before the call
+    elif v == Path[0]:  # Indicate that a cycle has been formed
         if len(Path) >= N:
             return
         type_cycle_path = [query.nodes[x]['node_type'] for x in Path]
@@ -576,20 +578,19 @@ def parse_by_dfs(query, v, Path, M, N, linears, cycles, linears_to_nodes, cycles
 
 
 def main():
-    '''
+    # Corresponding to Fig 10.(c).(d). Analyse query performance for CSM-Index and JSM-FSI
     max_query_times = [600]
     for max_query_time in max_query_times:
         logging.info(f"begin max_query_time:{max_query_time}")
         run_by_embeeding(max_query_time)
-    exit()
 
-    '''
-    query_sizes = range(7, 8)
+    # Corresponding to Fig 9
+    query_sizes = range(3, 8)
     for query_size in query_sizes:
         logging.info(f"begin query_size:{query_size}")
         run_by_query_size(query_size)
-    exit()
 
+    # Corresponding to Fig 11.(c).(d). Analyse query performance for CSM-FSI
     max_query_times = [600]
     for max_query_time in max_query_times:
         logging.info(f"begin mix max_query_time:{max_query_time}")
@@ -624,7 +625,7 @@ def run_querys(querys, subgraphs, M, N, G, G_node_index, G_linear_index, G1, G1_
 def run_by_query_size(query_size):
     max_query_time = 600
     query_num = 100
-    degree_mean, degree_std = 2, 4  # 普通节点的度数分布
+    degree_mean, degree_std = 2, 4  # Degree distribution of regular nodes
     M = 3
     N = 3
     embedding_count = 9
@@ -666,7 +667,7 @@ def run_by_query_size(query_size):
 def run_by_embeeding(max_query_time):
     query_num = 100
     query_mean, query_std = 5, 2
-    degree_mean, degree_std = 2, 4  # 普通节点的度数分布
+    degree_mean, degree_std = 2, 4  # Degree distribution of regular nodes
     y = np.array(range(1, 21, 2))
     M = 3
     N = 3
@@ -721,7 +722,7 @@ def run_by_embeeding(max_query_time):
 def run_by_mix(max_query_time):
     query_num = 100
     query_mean, query_std = 5, 2
-    degree_mean, degree_std = 2, 4  # 普通节点的度数分布
+    degree_mean, degree_std = 2, 4  # Degree distribution of regular nodes
     y = np.array(range(1, 21, 4))
     M = 3
     N = 3

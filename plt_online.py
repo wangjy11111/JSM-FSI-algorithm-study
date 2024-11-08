@@ -156,6 +156,9 @@ if __name__ == '__main__':
     cu.custom_logging()
     dir_in = str(sys.argv[1]) + "/"
     #plt_multi(dir_in)
+    # Corresponding to Fig 10.(c).(d). Analyse query performance for CSM-Index and JSM-FSI
     plt_single_by_embedding_rate(dir_in)
-    #plt_single_by_query_size(dir_in)
-    #plt_single_by_mix(dir_in)
+    # Corresponding to Fig 9
+    plt_single_by_query_size(dir_in)
+    # Corresponding to Fig 11.(c).(d). Analyse query performance for CSM-FSI
+    plt_single_by_mix(dir_in)

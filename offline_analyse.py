@@ -149,7 +149,7 @@ def run_all_path_len():
 
     cu.save_offline(dir_in, y, embedding_rate, FSI_sizes, ORI_sizes, FSI_times, SGI_times, ORI_times, "offline")
 
-def save_result():
+def debug_save_result():
     dir_in = str(sys.argv[1]) + "/"
     y = np.array(range(1, 21, 2))
     FSI_sizes = []
@@ -350,7 +350,9 @@ def test():
 
 if __name__ == '__main__':
     cu.custom_logging()
-    #run_all_path_len()
+    # Corresponding to Fig 8 and Fig 10.(a).(b). Analyse indexes for CSM-Index and JSM-FSI
+    run_all_path_len()
+    # Corresponding to Fig 11.(a).(b). Analyse indexes for CSM-FSI
     run_mix()
     #test()
-    #save_result()
+    #debug_save_result()
